@@ -31,5 +31,7 @@ func (handler *Handler) InitRoutes() *gin.Engine {
 		users.GET("/:id", handler.getUser)
 	}
 
+	r.GET("/ws", handler.handleNotifications)
+
 	return r
 }
