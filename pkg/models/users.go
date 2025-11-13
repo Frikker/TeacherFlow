@@ -1,30 +1,28 @@
 package models
 
 import (
-	"chat-service/pkg/middleware/db"
-	"context"
 	"fmt"
 	"time"
 )
 
 type User struct {
 	ID           int       `json:"id"`
-	Name         string    `json:"name"`
+	Username     string    `json:"username"`
 	Email        string    `json:"email"`
-	Age          int       `json:"age"`
+	BirthDate    string    `json:"birth_date"`
 	RegisteredAt time.Time `json:"registered_at"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-func NewUser[T int | string | time.Time](hash map[string]T) (user User, err error) {
-	return FindUser(hash)
+func (m *Model) NewUser(params map[string]string) (user User, err error) {
+	return m.FindUser(params)
 }
 
-func FindUser[T int | string | time.Time](hash map[string]T) (user User, err error) {
-	hashCount := len(hash)
+func (m *Model) FindUser(params map[string]string) (user User, err error) {
+	paramsCount := len(params)
 	query := "SELECT * FROM users WHERE"
-	for key, value := range hash {
+	for key, value := range params {
 		switch key {
 		case "id":
 			query += fmt.Sprintf(" id = %v", value)
@@ -43,39 +41,29 @@ func FindUser[T int | string | time.Time](hash map[string]T) (user User, err err
 		default:
 			return User{}, fmt.Errorf("Unknown key: %s", key)
 		}
-		hashCount--
-		if len(hash) > 1 && hashCount != 0 {
+		paramsCount--
+		if len(params) > 1 && paramsCount != 0 {
 			query += " AND"
 		}
 	}
-	err = conn.QueryRow(query).Scan(&user.ID, &user.Name, &user.Email, &user.Age, &user.RegisteredAt, &user.CreatedAt, &user.UpdatedAt)
+	err = m.conn.QueryRow(query).Scan(&user.ID, &user.Username, &user.Email, &user.BirthDate, &user.RegisteredAt, &user.CreatedAt, &user.UpdatedAt)
 	return
 }
 
-func FindUsers() (users []User, err error) {
-	conn, err := db.NewConn(context.Background())
-	if err != nil {
-		return users, err
-	}
-	defer conn.Close()
-	rows, err := conn.SelectAll("users")
+func (m *Model) FindUsers() (users []User, err error) {
+	rows, err := m.conn.SelectAll("users")
 	if err != nil {
 		return users, err
 	}
 	for rows.Next() {
 		var user User
-		err = rows.Scan(&user.ID, &user.Name, &user.Email, &user.Age, &user.RegisteredAt, &user.CreatedAt, &user.UpdatedAt)
+		err = rows.Scan(&user.ID, &user.Username, &user.Email, &user.BirthDate, &user.RegisteredAt, &user.CreatedAt, &user.UpdatedAt)
 		users = append(users, user)
 	}
 	return
 }
 
-func CreateUser(name string, email string, age int) (err error) {
-	conn, err := db.NewConn(context.Background())
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-	_, err = conn.CreateRow("users(name, email, age)", name, email, age)
+func (m *Model) CreateUser(name string, email string, age int) (err error) {
+	_, err = m.conn.CreateRow("users(name, email, age)", name, email, age)
 	return err
 }

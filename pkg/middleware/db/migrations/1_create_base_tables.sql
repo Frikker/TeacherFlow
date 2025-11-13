@@ -35,7 +35,10 @@ create table if not exists questions (
     user_id bigint references users not null,
     category_id bigint references categories not null,
     header varchar not null,
-    description varchar
+    description varchar,
+    is_closed bool,
+    created_at timestamp,
+    updated_at timestamp
 );
 create index if not exists question_user on questions using btree (user_id);
 create index if not exists question_category on questions using btree (category_id);
@@ -45,7 +48,9 @@ create table if not exists answers (
     user_id bigint references users not null,
     question_id bigint references questions not null,
     text varchar not null,
-    is_best bool default false
+    is_best bool default false,
+    created_at timestamp,
+    updated_at timestamp
 );
 create index if not exists answer_user on answers using btree (user_id);
 create index if not exists answer_question on answers using btree (question_id);
@@ -55,7 +60,9 @@ create table if not exists rates (
     rankable_type varchar not null,
     rankable_id bigint not null,
     user_id bigint references users not null,
-    rank int not null default 1 check (rank between 1 and 5)
+    rank int not null default 1 check (rank between 1 and 5),
+    created_at timestamp,
+    updated_at timestamp
 );
 create index if not exists rate_user on rates using btree (user_id);
 create index if not exists rate_ratable on rates using btree (rankable_id, rankable_type)

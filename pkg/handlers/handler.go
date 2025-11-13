@@ -2,16 +2,18 @@ package handlers
 
 import (
 	"chat-service/pkg/middleware/db"
+	"chat-service/pkg/models"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	conn *db.Connection
+	Model *models.Model
 }
 
 func NewHandler(conn *db.Connection) *Handler {
-	return &Handler{conn}
+	model := models.NewModel(conn)
+	return &Handler{Model: model}
 }
 
 func (handler *Handler) InitRoutes() *gin.Engine {
